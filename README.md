@@ -72,6 +72,24 @@ The widget can scan with your phones camera the credit card data using card.io.
         paymentezAddVC.didMove(toParentViewController: self)
 ```
 
+Retrive the valid credit card from the PaymentezAddNativeController (Widget):
+
+```swift
+      if let validCard = paymentezAddVC.getValidCard() // CHECK IF THE CARD IS VALID, IF THERE IS A VALIDATION ERROR NIL VALUE WILL BE RETURNED
+        {
+            sender?.isEnabled = false
+            PaymentezSDKClient.createToken(validCard, uid: UserModel.uid, email: UserModel.email, callback: { (error, cardAdded) in
+                
+                if cardAdded != nil // handle the card status
+                {  
+                }
+                else if error != nil //handle the error
+                {
+                }
+        	})
+        }
+```
+
 ### Scan Card
 If you want to do the scan yourself.
 
