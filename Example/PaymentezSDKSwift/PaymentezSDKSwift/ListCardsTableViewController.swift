@@ -39,17 +39,6 @@ class ListCardsTableViewController: UITableViewController {
         
         
         
-        /*PaymentezSDKClient.listCards(UserModel.uid) { (error, cardList) in
-            
-            if error == nil
-            {
-                self.cardList = cardList!
-                
-                
-            }
-            
-            
-        }*/
     }
 
     override func didReceiveMemoryWarning() {

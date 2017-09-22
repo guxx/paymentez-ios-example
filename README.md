@@ -57,211 +57,59 @@ Setting up your app,. inside AppDelegate->didFinishLaunchingWithOptions
     PaymentezSDKClient.setEnvironment("AbiColApp", secretKey: "2PmoFfjZJzjKTnuSYCFySMfHlOIBz7", testMode: true)
 
 
-###Show "Add Card" WebView
+###Show AddCard Widget
 
-This method will present a webview as modal in your application
+In order to create a widget you should create a PaymentezAddNativeController from the PaymentezSDKClient. Then add it to the UIView that will be the container of the add form. The min height should be 160 px
 
+The widget can scan with your phones camera the credit card data using card.io.
 
 ```swift
-PaymentezSDKClient.showAddViewControllerForUser("test", email: "gsotelo@paymentez.com", presenter: self) { (error, closed, added) in
-            
-            if closed // user closed
-            {
-                
-            }
-            else if added // was added
-            {
-                print("ADDED SUCCESSFUL")
-                dispatch_async(dispatch_get_main_queue(), {
-                    let alertC = UIAlertController(title: "Success", message: "card added", preferredStyle: UIAlertControllerStyle.Alert)
-                    
-                    let defaultAction = UIAlertAction(title: "OK", style: .Default, handler: nil)
-                    alertC.addAction(defaultAction)
-                    self.presentViewController(alertC, animated: true
-                        , completion: {
-                            self.refreshTable()
-                    })
-                })
-                
-                
-                
-            }
-            else if error != nil //there was an error
-            {
-                print(error?.code)
-                print(error?.description)
-                print(error?.details)
-                if error!.shouldVerify() // if the card should be verified
-                {
-                    print(error?.getVerifyTrx())
-                    dispatch_async(dispatch_get_main_queue(), {
-                        let alertC = UIAlertController(title: "error \(error!.code)", message: "Should verify: \(error!.getVerifyTrx())", preferredStyle: UIAlertControllerStyle.Alert)
-                        
-                        let defaultAction = UIAlertAction(title: "OK", style: .Default, handler: nil)
-                        alertC.addAction(defaultAction)
-                        self.presentViewController(alertC, animated: true
-                            , completion: {
-                                
-                        })
-                    })
-                }
-                else
-                {
-                    dispatch_async(dispatch_get_main_queue(), {
-                        let alertC = UIAlertController(title: "error \(error!.code)", message: "\(error!.descriptionCode)", preferredStyle: UIAlertControllerStyle.Alert)
-                        
-                        let defaultAction = UIAlertAction(title: "OK", style: .Default, handler: nil)
-                        alertC.addAction(defaultAction)
-                        self.presentViewController(alertC, animated: true
-                            , completion: {
-                                
-                        })
-                    })
-                }
-            }
-            
-        }
-    }
+        let paymentezAddVC = PaymentezSDKClient.createAddWidget()
+        self.addChildViewController(paymentezAddVC)
+        paymentezAddVC.view.frame = CGRect(x: 0, y: 0, width: self.view.bounds.width, height: self.addView.frame.size.height)
+        self.addView.translatesAutoresizingMaskIntoConstraints = true
+        self.addView.addSubview(paymentezAddVC.view)
+        paymentezAddVC.didMove(toParentViewController: self)
 ```
 
-
-###List Cards
-
-
-```swift
- PaymentezSDKClient.listCards("test") { (error, cardList) in
-            
-            if error == nil
-            {
-                self.cardList = cardList!
-                self.tableView.reloadData()
-            }
-            
-            
-        }
-```
-
-
-###Debit Card
+### Scan Card
+If you want to do the scan yourself.
 
 ```swift
-let parameters = PaymentezDebitParameters()
-        parameters.cardReference = self.cardReference
-        parameters.productAmount = Double(self.amountTextfield.text!)!
-        parameters.productDescription = "Test"
-        parameters.devReference = "1234"
-        parameters.vat = 0.10
-        parameters.email = "gsotelo@paymentez.com"
-        parameters.uid = "test"
-        PaymentezSDKClient.debitCard(parameters) { (error, transaction) in
-            self.activityIndicator.stopAnimating()
-            if error == nil
+PaymentezSDKClient.scanCard(self) { (closed, number, expiry, cvv) in
+            if !closed // user did not closed the scan card dialog
             {
-                dispatch_async(dispatch_get_main_queue(), {
-                    let alertC = UIAlertController(title: "Success", message: "transaction_id:\(transaction?.transactionId), status:\(transaction?.status)", preferredStyle: UIAlertControllerStyle.Alert)
-                    
-                    let defaultAction = UIAlertAction(title: "OK", style: .Default, handler: nil)
-                    alertC.addAction(defaultAction)
-                    self.presentViewController(alertC, animated: true
-                        , completion: {
-                            
-                    })
-                })
-            }
-            else
-            {
-                if error!.shouldVerify() // if the card should be verified
-                {
-                    print(error?.getVerifyTrx())
-                    dispatch_async(dispatch_get_main_queue(), {
-                        let alertC = UIAlertController(title: "error \(error!.code)", message: "Should verify: \(error!.getVerifyTrx())", preferredStyle: UIAlertControllerStyle.Alert)
-                        
-                        let defaultAction = UIAlertAction(title: "OK", style: .Default, handler: nil)
-                        alertC.addAction(defaultAction)
-                        self.presentViewController(alertC, animated: true
-                            , completion: {
-                                
-                        })
-                    })
-                }
-                else
-                {
-                    dispatch_async(dispatch_get_main_queue(), {
-                        let alertC = UIAlertController(title: "error \(error!.code)", message: "\(error!.descriptionCode)", preferredStyle: UIAlertControllerStyle.Alert)
-                        
-                        let defaultAction = UIAlertAction(title: "OK", style: .Default, handler: nil)
-                        alertC.addAction(defaultAction)
-                        self.presentViewController(alertC, animated: true
-                            , completion: {
-                                
-                        })
-                    })
-                }
-            }
-        }
-
-```
-
-###Delete Card
-
-Swift
-```swift
-PaymentezSDKClient.deleteCard("test", cardReference: card.cardReference!, callback: { (error, wasDeleted) in
-                if wasDeleted
-                {
-                    //self.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
-                    self.refreshTable()
-                }
-                else
-                {
-                    if error != nil
-                    {
-                        dispatch_async(dispatch_get_main_queue(), {
-                            let alertC = UIAlertController(title: "error \(error!.code)", message: "\(error!.description)", preferredStyle: UIAlertControllerStyle.Alert)
-                            
-                            let defaultAction = UIAlertAction(title: "OK", style: .Default, handler: nil)
-                            alertC.addAction(defaultAction)
-                            self.presentViewController(alertC, animated: true
-                                , completion: {
-                                    
-                            })
-                        })
-                    }
-                    
-                }
             })
-
 ```
 
-###Verify
-Swift
-``` swift
-PaymentezSDKClient.verifyWithCode(self.transactionId.text!, uid: "test", verificationCode: self.verifyCodetxt.text!) { (error, attemptsRemaining, transaction) in
-            self.activityIndicator.stopAnimating()
-            if transaction != nil
-            {
-                print ("verified")
-            }
-            else
-            {
-                if attemptsRemaining > 0 //
-                {
-                    print("you have attempts remaining")
-                }
-                if error != nil
-                {
-                    dispatch_async(dispatch_get_main_queue(), {
-                        let alertC = UIAlertController(title: "error \(error!.code)", message: "\(error!.descriptionCode)", preferredStyle: UIAlertControllerStyle.Alert)
-                        
-                        let defaultAction = UIAlertAction(title: "OK", style: .Default, handler: nil)
-                        alertC.addAction(defaultAction)
-                        self.presentViewController(alertC, animated: true
-                            , completion: {
-                                
-                        })
-                    })
-                }
-            }
-        }
+### Add Card (Just PCI Integrations)
+For custom form integrations 
 
+```swift 
+ let card = PaymentezCard.createCard(cardHolder:"Gustavo Sotelo", cardNumber:"4111111111111111", expiryMonth:10, expiryYear:2020, cvc:"123")
+ 
+ if card != nil  // A valid card was created
+ {
+ 	PaymentezSDKClient.createToken(card, uid: "69123", email: "gsotelo@paymentez.com", callback: { (error, cardAdded) in
+            
+            if cardAdded != nil 
+            {
+            	//the request was succesfully sent, you should check the cardAdded status 
+            }
+                    
+    })
+ }
+ else 
+ {
+ //handle invalid card
+ }
+```
+
+
+### Secure Session Id
+
+Debit actions should be implemented in your own backend. For security reasons we provide a secure session id generation, for kount fraud systems. This will collect the device information in background
+
+```swift
+        let sessionId = PaymentezSDKClient.getSecureSessionId()
 ```
