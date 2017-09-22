@@ -52,7 +52,7 @@ Importing Swift
 
     import PaymentezSDK
 
-Setting up your app,. inside AppDelegate->didFinishLaunchingWithOptions
+Setting up your app inside AppDelegate->didFinishLaunchingWithOptions. You should use the Paymentez Client Credentials (Just ADD enabled)
 
     PaymentezSDKClient.setEnvironment("AbiColApp", secretKey: "2PmoFfjZJzjKTnuSYCFySMfHlOIBz7", testMode: true)
 
@@ -83,7 +83,14 @@ PaymentezSDKClient.scanCard(self) { (closed, number, expiry, cvv) in
 ```
 
 ### Add Card (Just PCI Integrations)
+
 For custom form integrations 
+Fields required
++ cardNumber: card number as a string without any separators, e.g. 4111111111111111.
++ cardHolder: cardholder name.
++ expuryMonth: integer representing the card's expiration month, 01-12.
++ expiryYear: integer representing the card's expiration year, e.g. 2020.
++ cvc: card security code as a string, e.g. '123'.
 
 ```swift 
  let card = PaymentezCard.createCard(cardHolder:"Gustavo Sotelo", cardNumber:"4111111111111111", expiryMonth:10, expiryYear:2020, cvc:"123")
@@ -113,3 +120,44 @@ Debit actions should be implemented in your own backend. For security reasons we
 ```swift
         let sessionId = PaymentezSDKClient.getSecureSessionId()
 ```
+
+### Utils
+
+Get Card Assets
+
+```swift
+         let card = PaymentezCard.createCard(cardHolder:"Gustavo Sotelo", cardNumber:"4111111111111111", expiryMonth:10, expiryYear:2020, cvc:"123")
+		 if card != nil  // A valid card was created
+ 		{
+ 			let image = card.getCardTypeAsset()
+ 		
+ 		}	
+```
+
+Get Card Type
+```swift
+         let card = PaymentezCard.createCard(cardHolder:"Gustavo Sotelo", cardNumber:"4111111111111111", expiryMonth:10, expiryYear:2020, cvc:"123")
+		 if card != nil  // A valid card was created
+ 		{
+ 			switch(card.cardType)
+            {
+            	case .amex:
+            	case .masterCard:
+            	case .visa:
+            	case .diners:
+            	default:
+            	//not supported action
+            }
+ 		
+ 		}	
+```
+
+### Building and Running the PaymentezSwift
+
+Before you can run the PaymentezStore application, you need to provide it with your APP_CODE, APP_SECRET_KEY and a sample backend.
+
+1. If you haven't already and APP_CODE and APP_SECRET_KEY, please ask your contact on Paymentez Team for it.
+2. Replace the `PAYMENTEZ_APP_CODE` and `PAYMENTEZ_APP_SECRET_KEY` in your AppDelegate as shown in Usage section
+3. Head to https://github.com/paymentez/example-java-backend and click "Deploy to Heroku" (you may have to sign up for a Heroku account as part of this process). Provide your Paymentez Server Credentials APP_CODE and  APP_SECRET_KEY fields under 'Env'. Click "Deploy for Free".
+4. Replace the `BACKEND_URL` variable in the MyBackendLib.swift (inside the variable myBackendUrl) with the app URL Heroku provides you with (e.g. "https://my-example-app.herokuapp.com")      
+5. Replace the variables (uid and email) in UserModel.swift  with your own user id reference
